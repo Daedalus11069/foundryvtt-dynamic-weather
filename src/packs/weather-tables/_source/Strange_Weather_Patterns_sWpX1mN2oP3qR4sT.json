@@ -1,0 +1,254 @@
+{
+  "name": "Strange Weather Patterns",
+  "description": "Magical and unusual weather phenomena for fantasy campaigns. Perfect for high-magic settings or areas near ley lines and rifts.",
+  "formula": "1d12",
+  "replacement": true,
+  "displayRoll": true,
+  "results": [
+    {
+      "_id": "hI1jK2lM3nO4pQ5r",
+      "_key": "!tables.results!sWpX1mN2oP3qR4sT.hI1jK2lM3nO4pQ5r",
+      "range": [1, 1],
+      "text": "Blood Rain",
+      "type": 0,
+      "drawn": false,
+      "flags": {
+        "dynamic-weather": {
+          "temperature": 18,
+          "cloudCover": 100,
+          "precipitation": 70,
+          "windSpeed": 20,
+          "visibility": 50,
+          "intensity": 85,
+          "weatherType": "strange"
+        }
+      }
+    },
+    {
+      "_id": "sT6uV7wX8yZ9aB0c",
+      "_key": "!tables.results!sWpX1mN2oP3qR4sT.sT6uV7wX8yZ9aB0c",
+      "range": [2, 2],
+      "text": "Gravity Flux",
+      "type": 0,
+      "drawn": false,
+      "flags": {
+        "dynamic-weather": {
+          "temperature": 20,
+          "cloudCover": 30,
+          "precipitation": 0,
+          "windSpeed": 35,
+          "visibility": 90,
+          "intensity": 70,
+          "weatherType": "strange"
+        }
+      }
+    },
+    {
+      "_id": "dE1fG2hI3jK4lM5n",
+      "_key": "!tables.results!sWpX1mN2oP3qR4sT.dE1fG2hI3jK4lM5n",
+      "range": [3, 3],
+      "text": "Magic Storm",
+      "type": 0,
+      "drawn": false,
+      "flags": {
+        "dynamic-weather": {
+          "temperature": 15,
+          "cloudCover": 100,
+          "precipitation": 80,
+          "windSpeed": 50,
+          "visibility": 40,
+          "intensity": 95,
+          "weatherType": "strange"
+        }
+      }
+    },
+    {
+      "_id": "oP6qR7sT8uV9wX0y",
+      "_key": "!tables.results!sWpX1mN2oP3qR4sT.oP6qR7sT8uV9wX0y",
+      "range": [4, 4],
+      "text": "Prismatic Mist",
+      "type": 0,
+      "drawn": false,
+      "flags": {
+        "dynamic-weather": {
+          "temperature": 22,
+          "cloudCover": 70,
+          "precipitation": 5,
+          "windSpeed": 8,
+          "visibility": 30,
+          "intensity": 50,
+          "weatherType": "strange"
+        }
+      }
+    },
+    {
+      "_id": "zA1bC2dE3fG4hI5j",
+      "_key": "!tables.results!sWpX1mN2oP3qR4sT.zA1bC2dE3fG4hI5j",
+      "range": [5, 5],
+      "text": "Temporal Anomaly",
+      "type": 0,
+      "drawn": false,
+      "flags": {
+        "dynamic-weather": {
+          "temperature": 25,
+          "cloudCover": 60,
+          "precipitation": 0,
+          "windSpeed": 15,
+          "visibility": 80,
+          "intensity": 80,
+          "weatherType": "strange"
+        }
+      }
+    },
+    {
+      "_id": "kL6mN7oP8qR9sT0u",
+      "_key": "!tables.results!sWpX1mN2oP3qR4sT.kL6mN7oP8qR9sT0u",
+      "range": [6, 6],
+      "text": "Ash Fall",
+      "type": 0,
+      "drawn": false,
+      "flags": {
+        "dynamic-weather": {
+          "temperature": 28,
+          "cloudCover": 95,
+          "precipitation": 60,
+          "windSpeed": 25,
+          "visibility": 35,
+          "intensity": 75,
+          "weatherType": "strange"
+        }
+      }
+    },
+    {
+      "_id": "vW1xY2zA3bC4dE5f",
+      "_key": "!tables.results!sWpX1mN2oP3qR4sT.vW1xY2zA3bC4dE5f",
+      "range": [7, 7],
+      "text": "Ethereal Winds",
+      "type": 0,
+      "drawn": false,
+      "flags": {
+        "dynamic-weather": {
+          "temperature": 10,
+          "cloudCover": 40,
+          "precipitation": 0,
+          "windSpeed": 55,
+          "visibility": 85,
+          "intensity": 65,
+          "weatherType": "strange"
+        }
+      }
+    },
+    {
+      "_id": "gH6iJ7kL8mN9oP0q",
+      "_key": "!tables.results!sWpX1mN2oP3qR4sT.gH6iJ7kL8mN9oP0q",
+      "range": [8, 8],
+      "text": "Crystal Hail",
+      "type": 0,
+      "drawn": false,
+      "flags": {
+        "dynamic-weather": {
+          "temperature": 0,
+          "cloudCover": 90,
+          "precipitation": 75,
+          "windSpeed": 30,
+          "visibility": 55,
+          "intensity": 80,
+          "weatherType": "strange"
+        }
+      }
+    },
+    {
+      "_id": "rS1tU2vW3xY4zA5b",
+      "_key": "!tables.results!sWpX1mN2oP3qR4sT.rS1tU2vW3xY4zA5b",
+      "range": [9, 9],
+      "text": "Dimensional Rift Storm",
+      "type": 0,
+      "drawn": false,
+      "flags": {
+        "dynamic-weather": {
+          "temperature": 5,
+          "cloudCover": 100,
+          "precipitation": 50,
+          "windSpeed": 56,
+          "visibility": 40,
+          "intensity": 100,
+          "weatherType": "strange",
+          "hasSpecialEffects": true
+        }
+      }
+    },
+    {
+      "_id": "cD6eF7gH8iJ9kL0m",
+      "_key": "!tables.results!sWpX1mN2oP3qR4sT.cD6eF7gH8iJ9kL0m",
+      "range": [10, 10],
+      "text": "Luminous Aurora",
+      "type": 0,
+      "drawn": false,
+      "flags": {
+        "dynamic-weather": {
+          "temperature": -5,
+          "cloudCover": 20,
+          "precipitation": 0,
+          "windSpeed": 10,
+          "visibility": 100,
+          "intensity": 40,
+          "weatherType": "strange"
+        }
+      }
+    },
+    {
+      "_id": "nO1pQ2rS3tU4vW5x",
+      "_key": "!tables.results!sWpX1mN2oP3qR4sT.nO1pQ2rS3tU4vW5x",
+      "range": [11, 11],
+      "text": "Living Fog",
+      "type": 0,
+      "drawn": false,
+      "flags": {
+        "dynamic-weather": {
+          "temperature": 18,
+          "cloudCover": 100,
+          "precipitation": 20,
+          "windSpeed": 5,
+          "visibility": 15,
+          "intensity": 70,
+          "weatherType": "strange"
+        }
+      }
+    },
+    {
+      "_id": "yZ6aB7cD8eF9gH0i",
+      "_key": "!tables.results!sWpX1mN2oP3qR4sT.yZ6aB7cD8eF9gH0i",
+      "range": [12, 12],
+      "text": "Harmonic Resonance",
+      "type": 0,
+      "drawn": false,
+      "flags": {
+        "dynamic-weather": {
+          "temperature": 20,
+          "cloudCover": 50,
+          "precipitation": 0,
+          "windSpeed": 20,
+          "visibility": 95,
+          "intensity": 55,
+          "weatherType": "strange"
+        }
+      }
+    }
+  ],
+  "folder": null,
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "systemId": null,
+    "systemVersion": null,
+    "coreVersion": "13.0.0",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "_id": "sWpX1mN2oP3qR4sT",
+  "_key": "!tables!sWpX1mN2oP3qR4sT"
+}

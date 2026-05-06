@@ -1,0 +1,34 @@
+{
+  "dynamic-weather": {
+    "settings": {
+      "rollTableId": {
+        "name": "Weather RollTable",
+        "hint": "Select the rolltable to use for generating weather patterns"
+      },
+      "updateFrequency": {
+        "name": "Weather Update Frequency (hours)",
+        "hint": "How often to roll for new weather (in game hours)"
+      },
+      "transitionDuration": {
+        "name": "Base Transition Duration (minutes)",
+        "hint": "How long weather transitions take (actual duration varies based on pattern compatibility)"
+      },
+      "announceWeather": {
+        "name": "Announce Weather Changes",
+        "hint": "Post a chat message when weather changes"
+      },
+      "whisperToGM": {
+        "name": "Whisper Weather to GM Only",
+        "hint": "Only show weather announcements to the GM"
+      }
+    },
+    "dialog": {
+      "title": "Dynamic Weather Control",
+      "currentWeather": "Current Weather",
+      "rollNewWeather": "Roll New Weather",
+      "selectRollTable": "Select RollTable",
+      "noWeather": "No weather pattern active. Roll for weather to begin.",
+      "transitioning": "Transitioning..."
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "private": true,
+  "name": "dynamic-weather",
+  "version": "1.0.0",
+  "description": "A module that creates realistic, time-based weather pattern transitions using Foundry VTT rolltables. Supports normal, strange, and hybrid weather modes for any campaign style.",
+  "type": "module",
+  "scripts": {
+    "link-dev": "./linkDevEnv.bat",
+    "link-dev-dist": "./linkDevEnvDist.bat",
+    "unlink-dev": "./unlinkDevEnv.bat",
+    "build:db": "fvtt package pack weather-tables --in src/packs/weather-tables/_source --out packs",
+    "build:json": "fvtt package unpack weather-tables --in packs --out src/packs/weather-tables/_source",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.4.21"
+  },
+  "devDependencies": {
+    "@foundryvtt/foundryvtt-cli": "^3.0.3",
+    "@vitejs/plugin-vue": "^6.0.6",
+    "esbuild": "^0.28.0",
+    "vite": "^8.0.10",
+    "vite-plugin-static-copy": "^4.1.0"
+  }
+}

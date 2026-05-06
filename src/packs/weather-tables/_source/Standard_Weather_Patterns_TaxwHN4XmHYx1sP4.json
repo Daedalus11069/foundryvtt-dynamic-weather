@@ -1,0 +1,205 @@
+{
+  "name": "Standard Weather Patterns",
+  "description": "A comprehensive table of realistic weather patterns for temperate climates. Perfect for standard fantasy campaigns.",
+  "formula": "1d20",
+  "replacement": true,
+  "displayRoll": true,
+  "results": [
+    {
+      "_id": "aB1cD2eF3gH4iJ5k",
+      "_key": "!tables.results!TaxwHN4XmHYx1sP4.aB1cD2eF3gH4iJ5k",
+      "range": [1, 2],
+      "text": "Clear Skies",
+      "type": 0,
+      "drawn": false,
+      "flags": {
+        "dynamic-weather": {
+          "temperature": 22,
+          "cloudCover": 5,
+          "precipitation": 0,
+          "windSpeed": 8,
+          "visibility": 100,
+          "intensity": 5
+        }
+      }
+    },
+    {
+      "_id": "mN6oP7qR8sT9uV0w",
+      "_key": "!tables.results!TaxwHN4XmHYx1sP4.mN6oP7qR8sT9uV0w",
+      "range": [3, 5],
+      "text": "Partly Cloudy",
+      "type": 0,
+      "drawn": false,
+      "flags": {
+        "dynamic-weather": {
+          "temperature": 20,
+          "cloudCover": 40,
+          "precipitation": 0,
+          "windSpeed": 12,
+          "visibility": 95,
+          "intensity": 15
+        }
+      }
+    },
+    {
+      "_id": "xY1zA2bC3dE4fG5h",
+      "_key": "!tables.results!TaxwHN4XmHYx1sP4.xY1zA2bC3dE4fG5h",
+      "range": [6, 8],
+      "text": "Overcast",
+      "type": 0,
+      "drawn": false,
+      "flags": {
+        "dynamic-weather": {
+          "temperature": 18,
+          "cloudCover": 90,
+          "precipitation": 0,
+          "windSpeed": 15,
+          "visibility": 85,
+          "intensity": 25
+        }
+      }
+    },
+    {
+      "_id": "iJ6kL7mN8oP9qR0s",
+      "_key": "!tables.results!TaxwHN4XmHYx1sP4.iJ6kL7mN8oP9qR0s",
+      "range": [9, 11],
+      "text": "Light Rain",
+      "type": 0,
+      "drawn": false,
+      "flags": {
+        "dynamic-weather": {
+          "temperature": 16,
+          "cloudCover": 85,
+          "precipitation": 40,
+          "windSpeed": 18,
+          "visibility": 75,
+          "intensity": 40
+        }
+      }
+    },
+    {
+      "_id": "tU1vW2xY3zA4bC5d",
+      "_key": "!tables.results!TaxwHN4XmHYx1sP4.tU1vW2xY3zA4bC5d",
+      "range": [12, 14],
+      "text": "Moderate Rain",
+      "type": 0,
+      "drawn": false,
+      "flags": {
+        "dynamic-weather": {
+          "temperature": 15,
+          "cloudCover": 95,
+          "precipitation": 65,
+          "windSpeed": 22,
+          "visibility": 60,
+          "intensity": 55
+        }
+      }
+    },
+    {
+      "_id": "eF6gH7iJ8kL9mN0o",
+      "_key": "!tables.results!TaxwHN4XmHYx1sP4.eF6gH7iJ8kL9mN0o",
+      "range": [15, 16],
+      "text": "Heavy Rain",
+      "type": 0,
+      "drawn": false,
+      "flags": {
+        "dynamic-weather": {
+          "temperature": 14,
+          "cloudCover": 100,
+          "precipitation": 85,
+          "windSpeed": 28,
+          "visibility": 45,
+          "intensity": 75
+        }
+      }
+    },
+    {
+      "_id": "pQ1rS2tU3vW4xY5z",
+      "_key": "!tables.results!TaxwHN4XmHYx1sP4.pQ1rS2tU3vW4xY5z",
+      "range": [17, 17],
+      "text": "Thunderstorm",
+      "type": 0,
+      "drawn": false,
+      "flags": {
+        "dynamic-weather": {
+          "temperature": 16,
+          "cloudCover": 100,
+          "precipitation": 90,
+          "windSpeed": 40,
+          "visibility": 40,
+          "intensity": 90
+        }
+      }
+    },
+    {
+      "_id": "aB6cD7eF8gH9iJ0k",
+      "_key": "!tables.results!TaxwHN4XmHYx1sP4.aB6cD7eF8gH9iJ0k",
+      "range": [18, 18],
+      "text": "Fog",
+      "type": 0,
+      "drawn": false,
+      "flags": {
+        "dynamic-weather": {
+          "temperature": 12,
+          "cloudCover": 95,
+          "precipitation": 10,
+          "windSpeed": 5,
+          "visibility": 25,
+          "intensity": 45
+        }
+      }
+    },
+    {
+      "_id": "lM1nO2pQ3rS4tU5v",
+      "_key": "!tables.results!TaxwHN4XmHYx1sP4.lM1nO2pQ3rS4tU5v",
+      "range": [19, 19],
+      "text": "Windy",
+      "type": 0,
+      "drawn": false,
+      "flags": {
+        "dynamic-weather": {
+          "temperature": 17,
+          "cloudCover": 50,
+          "precipitation": 0,
+          "windSpeed": 45,
+          "visibility": 80,
+          "intensity": 50
+        }
+      }
+    },
+    {
+      "_id": "wX6yZ7aB8cD9eF0g",
+      "_key": "!tables.results!TaxwHN4XmHYx1sP4.wX6yZ7aB8cD9eF0g",
+      "range": [20, 20],
+      "text": "Light Snow",
+      "type": 0,
+      "drawn": false,
+      "flags": {
+        "dynamic-weather": {
+          "temperature": -2,
+          "cloudCover": 80,
+          "precipitation": 50,
+          "windSpeed": 15,
+          "visibility": 65,
+          "intensity": 50
+        }
+      }
+    }
+  ],
+  "folder": null,
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "systemId": null,
+    "systemVersion": null,
+    "coreVersion": "13.0.0",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "_id": "TaxwHN4XmHYx1sP4",
+  "_key": "!tables!TaxwHN4XmHYx1sP4"
+}

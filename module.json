@@ -1,0 +1,40 @@
+{
+  "id": "dynamic-weather",
+  "title": "Dynamic Weather Patterns",
+  "description": "A module that creates realistic, time-based weather pattern transitions using Foundry VTT rolltables. Supports normal, strange, and hybrid weather modes for any campaign style.",
+  "version": "1.0.0",
+  "compatibility": {
+    "minimum": "11",
+    "verified": "13"
+  },
+  "authors": [
+    {
+      "name": "Daedalus11069"
+    }
+  ],
+  "esmodules": ["dist/dynamic-weather.js"],
+  "styles": ["dist/dynamic-weather.css"],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "packs": [
+    {
+      "name": "weather-tables",
+      "label": "Weather Tables",
+      "path": "packs/weather-tables",
+      "type": "RollTable",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    }
+  ],
+  "socket": false,
+  "url": "",
+  "manifest": "",
+  "download": ""
+}
