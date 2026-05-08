@@ -146,6 +146,32 @@
         </div>
       </div>
 
+      <div class="form-group">
+        <label>
+          <input
+            type="checkbox"
+            v-model="localAnnounceWeather"
+            name="announceWeather"
+            @change="onAnnounceWeatherChange"
+          />
+          Announce Weather Changes
+        </label>
+        <p class="notes">Post a chat message when weather changes</p>
+      </div>
+
+      <div class="form-group">
+        <label>
+          <input
+            type="checkbox"
+            v-model="localWhisperToGM"
+            name="whisperToGM"
+            @change="onWhisperToGMChange"
+          />
+          Whisper to GM Only
+        </label>
+        <p class="notes">Only show weather announcements to the GM</p>
+      </div>
+
       <div class="button-group">
         <button type="button" @click="onRollWeather">
           <i class="fas fa-dice"></i> Roll New Weather
@@ -176,6 +202,8 @@ const localStrangeTables = ref([]);
 const localHybridChance = ref(30);
 const localUpdateFrequency = ref(1);
 const localFrequencyUnit = ref("hours");
+const localAnnounceWeather = ref(false);
+const localWhisperToGM = ref(false);
 
 const weatherName = computed(() => {
   if (!weather.value?.name) return "";
@@ -259,11 +287,18 @@ function loadData() {
     "dynamic-weather",
     "frequencyUnit"
   );
+  localAnnounceWeather.value = game.settings.get(
+    "dynamic-weather",
+    "announceWeather"
+  );
+  localWhisperToGM.value = game.settings.get("dynamic-weather", "whisperToGM");
 }
 
 // Event handlers
 async function onRollWeather() {
   await props.weatherSystem.forceRoll();
+  // Immediately update the display after rolling
+  loadData();
 }
 
 function onRollTableChange() {
@@ -314,6 +349,22 @@ async function onFrequencyUnitChange() {
     "dynamic-weather",
     "frequencyUnit",
     localFrequencyUnit.value
+  );
+}
+
+async function onAnnounceWeatherChange() {
+  await game.settings.set(
+    "dynamic-weather",
+    "announceWeather",
+    localAnnounceWeather.value
+  );
+}
+
+async function onWhisperToGMChange() {
+  await game.settings.set(
+    "dynamic-weather",
+    "whisperToGM",
+    localWhisperToGM.value
   );
 }
 
@@ -434,6 +485,22 @@ onUnmounted(() => {
 
 .form-group label {
   font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-group label input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+}
+
+.form-group .notes {
+  margin: 0;
+  padding-left: 1.5rem;
+  font-size: 0.85rem;
+  color: var(--color-text-light-secondary);
+  font-style: italic;
 }
 
 .button-group {

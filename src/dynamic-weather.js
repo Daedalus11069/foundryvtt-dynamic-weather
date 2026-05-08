@@ -88,6 +88,7 @@ class WeatherTransitionManager {
     this.targetPattern = null;
     this.transitionProgress = 0; // 0-1
     this.transitionDuration = 300000; // 5 minutes in milliseconds
+    this.transitionStartTime = null; // When the transition started
     this.lastUpdate = Date.now();
   }
 
@@ -100,6 +101,7 @@ class WeatherTransitionManager {
     if (!this.currentPattern) {
       this.currentPattern = targetPattern;
       this.transitionProgress = 1;
+      this.transitionStartTime = null;
       return;
     }
 
@@ -112,6 +114,7 @@ class WeatherTransitionManager {
 
     // Less compatible patterns take longer to transition
     this.transitionDuration = baseDuration * (2 - compatibility);
+    this.transitionStartTime = Date.now();
     this.lastUpdate = Date.now();
   }
 
@@ -158,8 +161,8 @@ class WeatherTransitionManager {
     const eased = this.easeInOutCubic(t); // Smooth transition curve
 
     const interpolated = new WeatherPattern({
-      name: t < 0.5 ? this.currentPattern.name : this.targetPattern.name,
-      description: this.targetPattern.description,
+      name: this.targetPattern.name, // Always show the target (new) weather name
+      description: this.targetPattern.description, // Always show the target description
       intensity: this.lerp(
         this.currentPattern.intensity,
         this.targetPattern.intensity,
@@ -391,11 +394,21 @@ class DynamicWeatherSystem {
             weatherType === "strange"
               ? " <span class='strange-weather-badge'>Strange</span>"
               : "";
+
+          // Only show description if it's different from the name and not empty
+          const showDescription =
+            newPattern.description &&
+            newPattern.description !== newPattern.name &&
+            newPattern.description.trim() !== "";
+          const descriptionHtml = showDescription
+            ? `<p><em>${newPattern.description}</em></p>`
+            : "";
+
           ChatMessage.create({
             content: `<div class="dynamic-weather-announcement ${weatherType}-weather">
                             <h3>Weather Change${typeLabel}</h3>
                             <p>The weather is transitioning to: <strong>${newPattern.name}</strong></p>
-                            <p><em>${newPattern.description}</em></p>
+                            ${descriptionHtml}
                         </div>`,
             whisper: game.settings.get("dynamic-weather", "whisperToGM")
               ? [game.user.id]
@@ -415,17 +428,27 @@ class DynamicWeatherSystem {
    * Expects results to have specific text format or flags
    */
   parseWeatherFromResult(result, weatherType = "normal") {
+    // Get the name from the table result
+    const text = result.text || result.name || "";
+    const name = text.split("\n")[0] || result.text || result.name || "Unknown";
+
     // Try to get weather data from flags first
     const weatherData = result.flags?.["dynamic-weather"];
 
     if (weatherData) {
-      return new WeatherPattern({ ...weatherData, weatherType });
+      // Create a copy without name/description from flags (those come from table result only)
+      const { name: _, description: __, ...cleanWeatherData } = weatherData;
+
+      return new WeatherPattern({
+        ...cleanWeatherData,
+        name: name,
+        description: text,
+        weatherType
+      });
     }
 
     // Parse from text description
     // v13: TableResult uses 'text' property directly
-    const text = result.text || result.name || "";
-    const name = text.split("\n")[0] || result.text || result.name || "Unknown";
 
     // Default pattern based on name keywords
     const pattern = new WeatherPattern({
@@ -520,13 +543,40 @@ class DynamicWeatherSystem {
   }
 
   /**
+   * Clear all saved weather state and force a fresh roll
+   */
+  async clearWeatherState() {
+    console.log("Dynamic Weather: Clearing saved weather state");
+    this.transitionManager.currentPattern = null;
+    this.transitionManager.targetPattern = null;
+    this.transitionManager.transitionProgress = 0;
+    this.lastRoll = 0;
+    await this.saveState();
+    await this.rollWeather();
+    console.log("Dynamic Weather: State cleared and new weather rolled");
+  }
+
+  /**
    * Save current state to settings
    */
   async saveState() {
+    // Strip name and description from patterns - they should come from table results, not saved state
+    const stripNameAndDescription = pattern => {
+      if (!pattern) return null;
+      const { name, description, ...rest } = pattern;
+      return rest;
+    };
+
     const state = {
-      currentPattern: this.transitionManager.currentPattern?.toObject(),
-      targetPattern: this.transitionManager.targetPattern?.toObject(),
+      currentPattern: stripNameAndDescription(
+        this.transitionManager.currentPattern?.toObject()
+      ),
+      targetPattern: stripNameAndDescription(
+        this.transitionManager.targetPattern?.toObject()
+      ),
       transitionProgress: this.transitionManager.transitionProgress,
+      transitionDuration: this.transitionManager.transitionDuration,
+      transitionStartTime: this.transitionManager.transitionStartTime,
       lastRoll: this.lastRoll,
       rollTableId: this.rollTableId,
       strangeWeatherRollTableIds: this.strangeWeatherRollTableIds
@@ -543,21 +593,64 @@ class DynamicWeatherSystem {
     try {
       const state = game.settings.get("dynamic-weather", "systemState");
 
-      if (state.currentPattern) {
-        this.transitionManager.currentPattern = new WeatherPattern(
-          state.currentPattern
+      // Check if saved state has the old bug (name in currentPattern)
+      // If so, clear everything and start fresh
+      if (state.currentPattern?.name || state.targetPattern?.name) {
+        console.log(
+          "Dynamic Weather: Detected old saved state with stale weather names. Clearing and starting fresh."
         );
-      }
+        this.transitionManager.currentPattern = null;
+        this.transitionManager.targetPattern = null;
+        this.transitionManager.transitionProgress = 0;
+        this.lastRoll = 0; // Force immediate roll
+      } else {
+        // Load clean state (no names in saved patterns)
+        if (state.currentPattern) {
+          this.transitionManager.currentPattern = new WeatherPattern(
+            state.currentPattern
+          );
+        }
 
-      if (state.targetPattern) {
-        this.transitionManager.targetPattern = new WeatherPattern(
-          state.targetPattern
-        );
-        this.transitionManager.transitionProgress =
-          state.transitionProgress || 0;
-      }
+        if (state.targetPattern) {
+          this.transitionManager.targetPattern = new WeatherPattern(
+            state.targetPattern
+          );
 
-      this.lastRoll = state.lastRoll || Date.now();
+          // Restore transition timing information
+          this.transitionManager.transitionDuration =
+            state.transitionDuration || 300000;
+          this.transitionManager.transitionStartTime =
+            state.transitionStartTime || null;
+
+          // Recalculate progress based on elapsed time since transition started
+          if (this.transitionManager.transitionStartTime) {
+            const elapsed =
+              Date.now() - this.transitionManager.transitionStartTime;
+            const calculatedProgress = Math.min(
+              1,
+              elapsed / this.transitionManager.transitionDuration
+            );
+            this.transitionManager.transitionProgress = calculatedProgress;
+
+            // If transition is complete, finalize it
+            if (calculatedProgress >= 1) {
+              this.transitionManager.currentPattern =
+                this.transitionManager.targetPattern;
+              this.transitionManager.targetPattern = null;
+              this.transitionManager.transitionProgress = 0;
+              this.transitionManager.transitionStartTime = null;
+            }
+          } else {
+            // Fallback to saved progress if no start time
+            this.transitionManager.transitionProgress =
+              state.transitionProgress || 0;
+          }
+
+          this.transitionManager.lastUpdate = Date.now();
+        }
+
+        this.lastRoll = state.lastRoll || Date.now();
+      }
       this.rollTableId =
         state.rollTableId ||
         game.settings.get("dynamic-weather", "rollTableId");
@@ -724,9 +817,9 @@ Hooks.once("init", () => {
     type: Number,
     default: 60,
     range: {
-      min: 5,
+      min: 1,
       max: 240,
-      step: 5
+      step: 1
     }
   });
 
@@ -835,8 +928,13 @@ Hooks.once("init", () => {
     getWeatherSystem: () => weatherSystem,
     getCurrentWeather: () => weatherSystem?.getCurrentWeather(),
     rollWeather: () => weatherSystem?.forceRoll(),
+    clearWeatherState: () => weatherSystem?.clearWeatherState(),
     temperatureUtils: temperatureUtils
   };
+
+  console.log(
+    "Dynamic Weather: API available at game.modules.get('dynamic-weather').api"
+  );
 });
 
 // Add scene control button for weather control
@@ -862,6 +960,114 @@ Hooks.on("getSceneControlButtons", controls => {
       }
     }
   };
+});
+
+/**
+ * Add custom weather tab to Roll Table Result configuration
+ */
+Hooks.on("renderTableResultConfig", (app, html, data) => {
+  // Add Weather tab to the nav
+  const nav = html.find('nav.sheet-tabs[data-group="main"]');
+  if (nav.length) {
+    nav.append(`
+      <a class="item" data-tab="weather">
+        <i class="fas fa-cloud-sun"></i> Weather
+      </a>
+    `);
+  }
+
+  // Get current weather data from flags
+  const weatherData = app.document.flags?.["dynamic-weather"] || {};
+
+  // Create the weather tab content
+  const weatherTab = $(`
+    <div class="tab" data-tab="weather" data-group="main">
+      <p class="hint">Configure weather attributes for this roll table result. These values control the weather pattern generated when this result is rolled.</p>
+      
+      <div class="form-group">
+        <label>Temperature (°C)</label>
+        <div class="form-fields">
+          <input type="number" name="flags.dynamic-weather.temperature" value="${weatherData.temperature ?? 20}" step="1" />
+          <p class="notes">Base temperature in Celsius (-40 to 50)</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Cloud Cover (%)</label>
+        <div class="form-fields">
+          <input type="range" name="flags.dynamic-weather.cloudCover" value="${weatherData.cloudCover ?? 0}" min="0" max="100" step="5" />
+          <span class="range-value">${weatherData.cloudCover ?? 0}%</span>
+          <p class="notes">Percentage of sky covered by clouds (0-100)</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Precipitation (%)</label>
+        <div class="form-fields">
+          <input type="range" name="flags.dynamic-weather.precipitation" value="${weatherData.precipitation ?? 0}" min="0" max="100" step="5" />
+          <span class="range-value">${weatherData.precipitation ?? 0}%</span>
+          <p class="notes">Amount of rain, snow, or other precipitation (0-100)</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Wind Speed (km/h)</label>
+        <div class="form-fields">
+          <input type="number" name="flags.dynamic-weather.windSpeed" value="${weatherData.windSpeed ?? 0}" min="0" max="100" step="1" />
+          <p class="notes">Wind speed in kilometers per hour (0-100)</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Visibility (%)</label>
+        <div class="form-fields">
+          <input type="range" name="flags.dynamic-weather.visibility" value="${weatherData.visibility ?? 100}" min="0" max="100" step="5" />
+          <span class="range-value">${weatherData.visibility ?? 100}%</span>
+          <p class="notes">How far you can see (0-100, where 100 is clear)</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Intensity</label>
+        <div class="form-fields">
+          <input type="range" name="flags.dynamic-weather.intensity" value="${weatherData.intensity ?? 0}" min="0" max="100" step="5" />
+          <span class="range-value">${weatherData.intensity ?? 0}</span>
+          <p class="notes">Overall intensity of the weather pattern (0-100)</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Weather Type</label>
+        <div class="form-fields">
+          <select name="flags.dynamic-weather.weatherType">
+            <option value="normal" ${(weatherData.weatherType ?? "normal") === "normal" ? "selected" : ""}>Normal</option>
+            <option value="strange" ${weatherData.weatherType === "strange" ? "selected" : ""}>Strange/Magical</option>
+          </select>
+          <p class="notes">Type of weather (affects special effects)</p>
+        </div>
+      </div>
+    </div>
+  `);
+
+  // Append the tab content
+  html.find(".sheet-body").append(weatherTab);
+
+  // Update range value displays when sliders change
+  html.find('input[type="range"]').on("input", function () {
+    $(this)
+      .siblings(".range-value")
+      .text(
+        $(this).val() +
+          ($(this).attr("name").includes("visibility") ||
+          $(this).attr("name").includes("precipitation") ||
+          $(this).attr("name").includes("cloudCover")
+            ? "%"
+            : "")
+      );
+  });
+
+  // Adjust height to fit content
+  app.setPosition({ height: "auto" });
 });
 
 Hooks.once("ready", async () => {
@@ -898,7 +1104,9 @@ class WeatherControlDialog extends foundry.applications.api.ApplicationV2 {
     },
     position: {
       width: 500,
-      height: "auto"
+      height: 600,
+      top: 100,
+      left: 200
     }
   };
 

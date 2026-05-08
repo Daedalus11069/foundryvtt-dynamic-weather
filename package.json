@@ -9,9 +9,11 @@
     "link-dev-dist": "./linkDevEnvDist.bat",
     "unlink-dev": "./unlinkDevEnv.bat",
     "build:db": "fvtt package pack weather-tables --in src/packs/weather-tables/_source --out packs",
+    "build:db:smart": "node scripts/build-packs.js",
     "build:json": "fvtt package unpack weather-tables --in packs --out src/packs/weather-tables/_source",
     "dev": "vite",
-    "build": "vite build",
+    "build": "npm run build:db:smart && vite build",
+    "build:force": "npm run build:db && vite build",
     "preview": "vite preview"
   },
   "dependencies": {

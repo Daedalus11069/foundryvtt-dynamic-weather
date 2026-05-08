@@ -1,5 +1,30 @@
 /* Dynamic Weather Patterns Styling */
 
+/* Weather Control Dialog */
+.dynamic-weather-dialog .window-content {
+    max-height: 70vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.dynamic-weather-dialog .window-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.dynamic-weather-dialog .window-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+}
+
+.dynamic-weather-dialog .window-content::-webkit-scrollbar-thumb {
+    background: rgba(74, 144, 226, 0.5);
+    border-radius: 4px;
+}
+
+.dynamic-weather-dialog .window-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(74, 144, 226, 0.7);
+}
+
 /* Weather Button in UI */
 .dynamic-weather-button {
     position: fixed;
@@ -212,4 +237,80 @@
 /* Control button in scene controls */
 .control-tool[data-tool="weather"] {
     font-size: 18px;
+}
+
+/* Roll Table Result Config - Weather Tab */
+.table-result-config .tab[data-tab="weather"] {
+    padding: 10px;
+}
+
+.table-result-config .tab[data-tab="weather"] .hint {
+    margin: 0 0 15px 0;
+    padding: 10px;
+    background: rgba(74, 158, 255, 0.1);
+    border-left: 3px solid #4a9eff;
+    border-radius: 3px;
+    font-size: 0.9em;
+    color: var(--color-text-light-primary);
+}
+
+.table-result-config .tab[data-tab="weather"] .form-group {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--color-border-light-tertiary);
+}
+
+.table-result-config .tab[data-tab="weather"] .form-group:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.table-result-config .tab[data-tab="weather"] .form-group>label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: var(--color-text-dark-primary);
+}
+
+.table-result-config .tab[data-tab="weather"] .form-fields {
+    padding-left: 10px;
+}
+
+.table-result-config .tab[data-tab="weather"] input[type="number"],
+.table-result-config .tab[data-tab="weather"] select {
+    width: 100%;
+    max-width: 200px;
+    padding: 5px 8px;
+    border: 1px solid var(--color-border-dark);
+    border-radius: 3px;
+    background: var(--color-input-background);
+}
+
+.table-result-config .tab[data-tab="weather"] input[type="range"] {
+    width: 100%;
+    max-width: 300px;
+    margin-right: 10px;
+}
+
+.table-result-config .tab[data-tab="weather"] .range-value {
+    display: inline-block;
+    min-width: 45px;
+    font-weight: bold;
+    color: var(--color-text-dark-primary);
+}
+
+.table-result-config .tab[data-tab="weather"] .notes {
+    margin: 5px 0 0 0;
+    font-size: 0.85em;
+    color: var(--color-text-dark-secondary);
+    font-style: italic;
+}
+
+.table-result-config .tab[data-tab="weather"] select {
+    cursor: pointer;
+}
+
+.table-result-config .tab[data-tab="weather"] select option {
+    padding: 5px;
 }
