@@ -17,6 +17,14 @@ A sophisticated weather system module that creates realistic, time-based weather
 - **Hybrid Mode**: Dynamic mix of both with configurable probability
 - Perfect for any campaign style from low to high fantasy
 
+### 🌍 **Climate System**
+
+- 8 distinct climate types (Arctic, Tropical, Desert, etc.)
+- Automatic temperature baseline adjustments
+- Climate-based precipitation and wind modifiers
+- Natural temperature variation within each climate
+- Snow/rain conversion based on climate temperature thresholds
+
 ### 📊 **RollTable Integration**
 
 - Uses Foundry VTT's native RollTable system
@@ -214,6 +222,74 @@ const system = api.getWeatherSystem();
 
 See [API.md](API.md) for complete API documentation.
 
+### FXMaster Integration
+
+Dynamic Weather includes automatic integration with the [FXMaster module](https://github.com/gambit07/fxmaster) to provide visual particle and filter effects that match your weather patterns!
+
+**Features:**
+
+- Automatically applies appropriate FXMaster effects based on weather
+- Supports rain, snow, fog, clouds, hail, and more
+- Special effects for strange/magical weather (blood rain, ethereal winds, etc.)
+- Smart effect mapping based on weather attributes
+- Seamless transitions between effects
+
+**Setup:**
+
+1. Install FXMaster module (search for "FXMaster" in Foundry's module browser)
+2. Enable FXMaster in your world
+3. Enable "FXMaster Integration" in Dynamic Weather settings (enabled by default)
+4. Weather effects will now automatically apply!
+
+**Effect Mapping:**
+
+The integration automatically selects appropriate FXMaster presets based on weather patterns:
+
+**Standard Weather:**
+
+- **Rain** → `rain` or `drizzle` (based on precipitation intensity)
+- **Thunderstorm** → `thunderstorm`
+- **Snow** → `snow`, `blizzard`, or `sleet`
+- **Ice Storm** → `ice-storm`
+- **Fog/Mist** → `fog`, `mist`, or `rolling-fog` (based on visibility)
+- **Clouds** → `partly-cloudy`, `cloudy`, or `overcast` (based on cloud cover)
+- **Hail** → `hail`
+- **Wind** → `windy`, `dust-devil`, or `sandstorm`
+- **Hot Weather** → `heat-wave`
+- **Storms** → `hurricane`, `tornado`, `monsoon`
+
+**Strange/Magical Weather:**
+
+- **Blood Rain** → `blood-rain`
+- **Acid Rain** → `acid-rain`
+- **Arcane/Magic Storm** → `arcane-winds`
+- **Meteor Shower** → `meteor-shower`
+- **Ash/Volcanic** → `ashfall`
+- **Plague** → `plague-miasma`
+- **Spore Cloud** → `spore-cloud`
+- **Dimensional Rift** → `nullfront`
+- **Aether/Ethereal** → `aether-haze`
+- **Environmental** → `wildfire-smoke`, `autumn-leaves`, `sakura-bloom`, `divine-light`, and more
+
+**Dynamic Transition Effects:**
+
+FXMaster presets dynamically change during weather transitions to match the interpolated weather state:
+
+- Presets smoothly crossfade between different weather types using FXMaster's built-in transitions
+- Updates occur every 5 seconds during transitions to reflect gradual weather changes
+- Preset selection adapts based on interpolated precipitation, wind, visibility, and cloud cover values
+- When transitioning from Clear to Heavy Rain, you'll see weather evolve: partly-cloudy → cloudy → drizzle → rain
+- Effects perfectly sync with the weather statistics shown in the control dialog
+- No layering or blinking - each preset fully replaces the previous one with smooth fading
+
+**Configuration:**
+
+- **Enable FXMaster Integration**: Toggle in module settings or weather control dialog
+- Effects automatically clear when weather changes
+- Works with both normal and strange weather modes
+
+**Note:** FXMaster integration is optional. If FXMaster is not installed or is disabled, Dynamic Weather continues to work normally without visual effects.
+
 ## Realistic Transitions
 
 The module uses a sophisticated transition system:
@@ -247,9 +323,48 @@ Base time for weather transitions. Actual duration varies by compatibility:
 - **45-90 minutes**: Realistic pacing
 - **120+ minutes**: Slow, cinematic changes
 
+### Enable Weather Transitions (Default: Enabled)
+
+Control whether weather changes gradually or instantly:
+
+- **Enabled**: Weather transitions smoothly over time (realistic)
+- **Disabled**: Weather changes happen instantly (faster gameplay, less visual noise)
+
+When disabled, FXMaster effects also change instantly without fade animations. This is useful for:
+
+- Fast-paced games where weather is just flavor
+- Reducing visual effects during intense combat
+- Testing different weather patterns quickly
+- Worlds where instant weather changes make thematic sense (planar rifts, wild magic zones, etc.)
+
 ### Announcements
 
 Enable/disable chat messages when weather changes. Choose whether all players see them or just the GM.
+
+### Climate Type (Default: Temperate)
+
+Choose the climate for your world to automatically adjust temperature baselines and weather characteristics:
+
+**Climate Options:**
+
+- **Arctic** (-30°C to -10°C): Extremely cold with reduced precipitation, always snow-like conditions
+- **Subarctic** (-20°C to 5°C): Very cold with moderate precipitation, frequent snow
+- **Temperate** (0°C to 25°C): Balanced four-season climate with normal precipitation
+- **Subtropical** (10°C to 30°C): Warm with increased precipitation
+- **Tropical** (20°C to 35°C): Hot and humid with high precipitation, never snows
+- **Desert** (15°C to 45°C): Hot with extreme temperature swings and very low precipitation
+- **Mediterranean** (10°C to 30°C): Mild with moderate, seasonal precipitation
+- **Alpine/Mountain** (-10°C to 20°C): Cool and variable with increased wind
+
+**Climate Effects:**
+
+- **Temperature Baseline**: Each climate has a different average temperature range
+- **Precipitation Multiplier**: Desert climates reduce rain, tropical climates increase it
+- **Wind Speed**: Arctic and alpine climates have stronger winds
+- **Snow Threshold**: Temperature at which precipitation becomes snow varies by climate
+- **Weather Variety**: Temperature ranges add natural variation within each climate
+
+**Example**: Setting climate to "Tropical" means a "Clear" day will be hot (25-30°C), "Rain" will be frequent heavy rain, and "Snow" weather patterns will automatically convert to warm rain instead.
 
 ## Weather Modes
 

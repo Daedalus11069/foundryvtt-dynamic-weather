@@ -64,6 +64,22 @@
         </select>
       </div>
 
+      <div class="form-group">
+        <label for="climate">Climate Type:</label>
+        <select v-model="localClimate" name="climate" @change="onClimateChange">
+          <option
+            v-for="option in climateOptions"
+            :key="option.value"
+            :value="option.value"
+          >
+            {{ option.label }}
+          </option>
+        </select>
+        <p class="notes">
+          Adjusts temperature baselines and precipitation patterns
+        </p>
+      </div>
+
       <div v-if="localWeatherMode !== 'strange'" class="form-group">
         <label for="rollTable">Normal Weather RollTable:</label>
         <select
@@ -172,6 +188,37 @@
         <p class="notes">Only show weather announcements to the GM</p>
       </div>
 
+      <div class="form-group">
+        <label>
+          <input
+            type="checkbox"
+            v-model="localEnableFXMaster"
+            name="enableFXMaster"
+            @change="onEnableFXMasterChange"
+          />
+          Enable FXMaster Integration
+        </label>
+        <p class="notes">
+          Apply visual effects using FXMaster (requires FXMaster module)
+        </p>
+      </div>
+
+      <div class="form-group">
+        <label>
+          <input
+            type="checkbox"
+            v-model="localEnableTransitions"
+            name="enableTransitions"
+            @change="onEnableTransitionsChange"
+          />
+          Enable Weather Transitions
+        </label>
+        <p class="notes">
+          When enabled, weather gradually transitions. When disabled, changes
+          are instant.
+        </p>
+      </div>
+
       <div class="button-group">
         <button type="button" @click="onRollWeather">
           <i class="fas fa-dice"></i> Roll New Weather
@@ -204,6 +251,10 @@ const localUpdateFrequency = ref(1);
 const localFrequencyUnit = ref("hours");
 const localAnnounceWeather = ref(false);
 const localWhisperToGM = ref(false);
+const localEnableFXMaster = ref(true);
+const localClimate = ref("temperate");
+const localEnableTransitions = ref(true);
+const temperatureUnit = ref("celsius"); // Track for reactivity
 
 const weatherName = computed(() => {
   if (!weather.value?.name) return "";
@@ -213,22 +264,74 @@ const weatherName = computed(() => {
   return div.textContent || div.innerText || "";
 });
 
+// Climate options with temperature ranges converted to user's preferred unit
+const climateOptions = computed(() => {
+  const tempUtils = game.modules.get("dynamic-weather").api.temperatureUtils;
+  const unit = tempUtils.getUnitSymbol(temperatureUnit.value);
+
+  // Helper function to convert and format temperature range
+  const formatRange = (minC, maxC) => {
+    const min = Math.round(
+      tempUtils.convertTemperature(minC, temperatureUnit.value)
+    );
+    const max = Math.round(
+      tempUtils.convertTemperature(maxC, temperatureUnit.value)
+    );
+    return `${min}${unit} to ${max}${unit}`;
+  };
+
+  return [
+    {
+      value: "arctic",
+      label: `Arctic (Very Cold, ${formatRange(-30, -10)})`
+    },
+    {
+      value: "subarctic",
+      label: `Subarctic (Cold, ${formatRange(-20, 5)})`
+    },
+    {
+      value: "temperate",
+      label: `Temperate (Moderate, ${formatRange(0, 25)})`
+    },
+    {
+      value: "subtropical",
+      label: `Subtropical (Warm, ${formatRange(10, 30)})`
+    },
+    {
+      value: "tropical",
+      label: `Tropical (Hot & Humid, ${formatRange(20, 35)})`
+    },
+    { value: "desert", label: `Desert (Hot & Dry, ${formatRange(15, 45)})` },
+    {
+      value: "mediterranean",
+      label: `Mediterranean (Mild, ${formatRange(10, 30)})`
+    },
+    {
+      value: "alpine",
+      label: `Alpine/Mountain (Cool & Variable, ${formatRange(-10, 20)})`
+    }
+  ];
+});
+
 // Update weather display data
 function updateWeatherDisplay() {
   const currentWeather = props.weatherSystem?.getCurrentWeather();
-  const temperatureUnit = game.settings.get(
+  const currentTempUnit = game.settings.get(
     "dynamic-weather",
     "temperatureUnit"
   );
+
+  // Update temperature unit ref for climate options reactivity
+  temperatureUnit.value = currentTempUnit;
 
   if (currentWeather) {
     const tempUtils = game.modules.get("dynamic-weather").api.temperatureUtils;
     weather.value = {
       ...currentWeather,
       temperature: tempUtils
-        .convertTemperature(currentWeather.temperature, temperatureUnit)
+        .convertTemperature(currentWeather.temperature, currentTempUnit)
         .toFixed(1),
-      temperatureUnit: tempUtils.getUnitSymbol(temperatureUnit),
+      temperatureUnit: tempUtils.getUnitSymbol(currentTempUnit),
       precipitation: Math.round(currentWeather.precipitation),
       visibility: Math.round(currentWeather.visibility),
       cloudCover: Math.round(currentWeather.cloudCover),
@@ -292,6 +395,15 @@ function loadData() {
     "announceWeather"
   );
   localWhisperToGM.value = game.settings.get("dynamic-weather", "whisperToGM");
+  localEnableFXMaster.value = game.settings.get(
+    "dynamic-weather",
+    "enableFXMaster"
+  );
+  localClimate.value = game.settings.get("dynamic-weather", "climate");
+  localEnableTransitions.value = game.settings.get(
+    "dynamic-weather",
+    "enableTransitions"
+  );
 }
 
 // Event handlers
@@ -366,6 +478,27 @@ async function onWhisperToGMChange() {
     "whisperToGM",
     localWhisperToGM.value
   );
+}
+
+async function onEnableFXMasterChange() {
+  await game.settings.set(
+    "dynamic-weather",
+    "enableFXMaster",
+    localEnableFXMaster.value
+  );
+}
+
+async function onEnableTransitionsChange() {
+  await game.settings.set(
+    "dynamic-weather",
+    "enableTransitions",
+    localEnableTransitions.value
+  );
+}
+
+async function onClimateChange() {
+  await game.settings.set("dynamic-weather", "climate", localClimate.value);
+  // Climate change is automatically applied via the onChange handler in settings registration
 }
 
 // Hook callbacks

@@ -95,11 +95,20 @@ class WeatherTransitionManager {
   /**
    * Start a transition to a new weather pattern
    * @param {WeatherPattern} targetPattern - The weather pattern to transition to
-   * @param {Number} duration - Transition duration in milliseconds
+   * @param {Number} duration - Transition duration in milliseconds (0 = instant)
    */
   startTransition(targetPattern, duration = null) {
     if (!this.currentPattern) {
       this.currentPattern = targetPattern;
+      this.transitionProgress = 1;
+      this.transitionStartTime = null;
+      return;
+    }
+
+    // Handle instant transitions (duration = 0)
+    if (duration === 0) {
+      this.currentPattern = targetPattern;
+      this.targetPattern = null;
       this.transitionProgress = 1;
       this.transitionStartTime = null;
       return;
@@ -216,15 +225,319 @@ class WeatherTransitionManager {
   }
 }
 
+/**
+ * FXMaster Integration Class
+ * Handles visual effects via FXMaster module
+ */
+class FXMasterIntegration {
+  constructor() {
+    this.currentPreset = null;
+    this.toggleKey = "dynamic-weather-effects";
+  }
+
+  /**
+   * Check if FXMaster is available
+   */
+  isAvailable() {
+    return typeof FXMASTER !== "undefined" && FXMASTER.api?.effects;
+  }
+
+  /**
+   * Map weather pattern to FXMaster preset
+   * @param {WeatherPattern} pattern - The weather pattern
+   * @returns {string|null} - Preset name or null if no preset matches
+   */
+  mapWeatherToPreset(pattern) {
+    if (!pattern) return null;
+
+    const name = pattern.name?.toLowerCase() || "";
+    const precipitation = pattern.precipitation || 0;
+    const cloudCover = pattern.cloudCover || 0;
+    const temperature = pattern.temperature || 20;
+    const windSpeed = pattern.windSpeed || 0;
+    const visibility = pattern.visibility || 100;
+    const isStrange = pattern.weatherType === "strange";
+
+    // Strange weather presets (check first for priority)
+    if (isStrange) {
+      if (name.includes("blood")) return "blood-rain";
+      if (name.includes("acid")) return "acid-rain";
+      if (name.includes("magic") || name.includes("arcane"))
+        return "arcane-winds";
+      if (name.includes("meteor")) return "meteor-shower";
+      if (name.includes("ash") || name.includes("volcanic")) return "ashfall";
+      if (name.includes("plague") || name.includes("miasma"))
+        return "plague-miasma";
+      if (name.includes("spore")) return "spore-cloud";
+      if (name.includes("dimensional") || name.includes("rift"))
+        return "nullfront";
+      if (name.includes("aether") || name.includes("ethereal"))
+        return "aether-haze";
+      if (name.includes("veil")) return "veilfall";
+      if (name.includes("ley") || name.includes("surge")) return "ley-surge";
+      if (name.includes("permafrost")) return "permafrost-surge";
+      if (name.includes("gravewind")) return "gravewind";
+    }
+
+    // Standard weather presets
+    if (name.includes("blizzard")) return "blizzard";
+    if (
+      name.includes("thunderstorm") ||
+      (name.includes("storm") && precipitation > 50)
+    )
+      return "thunderstorm";
+    if (name.includes("hurricane")) return "hurricane";
+    if (name.includes("tornado")) return "tornado";
+    if (name.includes("ice") && name.includes("storm")) return "ice-storm";
+    if (name.includes("monsoon")) return "monsoon";
+
+    // Rain patterns (by intensity)
+    if (
+      name.includes("drizzle") ||
+      (name.includes("rain") && precipitation < 30)
+    )
+      return "drizzle";
+    if (name.includes("rain") && precipitation >= 30) return "rain";
+    if (name.includes("sunshower")) return "sunshower";
+
+    // Snow patterns
+    if (name.includes("sleet")) return "sleet";
+    if (name.includes("snow")) return "snow";
+
+    // Hail
+    if (name.includes("hail")) return "hail";
+
+    // Fog and mist
+    if (name.includes("rolling") && name.includes("fog")) return "rolling-fog";
+    if (name.includes("fog") || visibility < 30) return "fog";
+    if (name.includes("mist") || visibility < 60) return "mist";
+
+    // Cloud patterns (by coverage)
+    if (name.includes("overcast") || cloudCover > 80) return "overcast";
+    if (name.includes("cloudy") || cloudCover > 60) return "cloudy";
+    if (name.includes("partly") || cloudCover > 30) return "partly-cloudy";
+
+    // Wind patterns
+    if (name.includes("dust") && name.includes("devil")) return "dust-devil";
+    if (name.includes("sandstorm")) return "sandstorm";
+    if (name.includes("windy") || windSpeed > 40) return "windy";
+
+    // Temperature extremes
+    if (name.includes("heat") || temperature > 35) return "heat-wave";
+
+    // Special environmental
+    if (name.includes("wildfire") || name.includes("smoke"))
+      return "wildfire-smoke";
+    if (name.includes("autumn") && name.includes("leaves"))
+      return "autumn-leaves";
+    if (name.includes("sakura") || name.includes("cherry"))
+      return "sakura-bloom";
+
+    // Atmospheric effects
+    if (name.includes("divine") || name.includes("holy")) return "divine-light";
+    if (name.includes("twilight")) return "twilight-sun";
+    if (name.includes("black") && name.includes("sun")) return "black-sun";
+    if (name.includes("luminous")) return "luminous-sky";
+
+    // No matching preset
+    return null;
+  }
+
+  /**
+   * Apply FXMaster effects for a weather pattern
+   * @param {WeatherPattern} pattern - The weather pattern
+   * @param {boolean} skipFading - Skip fade in/out animation
+   * @param {boolean} clearFirst - Whether to clear existing effects before applying new ones
+   */
+  async applyWeatherEffects(pattern, skipFading = false, clearFirst = false) {
+    if (!this.isAvailable()) return;
+
+    try {
+      // Map pattern to preset
+      const preset = this.mapWeatherToPreset(pattern);
+
+      if (!preset) {
+        // If no preset matches, clear existing effects
+        await this.clearWeatherEffects(skipFading);
+        console.log(
+          "Dynamic Weather: No FXMaster preset for this weather pattern"
+        );
+        return;
+      }
+
+      // Always clear existing effects before applying new ones to avoid layering
+      // Use skipFading to control whether the transition is smooth or instant
+      await this.clearWeatherEffects(skipFading);
+
+      // Apply preset using FXMaster presets API
+      if (FXMASTER.api.presets) {
+        await FXMASTER.api.presets.play(preset, { skipFading: skipFading });
+        this.currentPreset = preset;
+
+        console.log(
+          `Dynamic Weather: Applied FXMaster preset '${preset}' for ${pattern.name}`
+        );
+      } else {
+        console.warn("Dynamic Weather: FXMaster presets API not available");
+      }
+    } catch (error) {
+      console.warn("Dynamic Weather: Error applying FXMaster effects:", error);
+    }
+  }
+
+  /**
+   * Clear current FXMaster weather effects
+   * @param {boolean} skipFading - Skip fade out animation
+   */
+  async clearWeatherEffects(skipFading = false) {
+    if (!this.isAvailable()) return;
+
+    try {
+      if (this.currentPreset) {
+        // Stop the current preset
+        if (FXMASTER.api.presets) {
+          await FXMASTER.api.presets.stop(this.currentPreset, {
+            skipFading: skipFading
+          });
+        } else {
+          // Fallback to stopping all effects
+          await FXMASTER.api.effects.stopAll({ skipFading: skipFading });
+        }
+
+        this.currentPreset = null;
+        console.log("Dynamic Weather: Cleared FXMaster effects");
+      }
+    } catch (error) {
+      console.warn("Dynamic Weather: Error clearing FXMaster effects:", error);
+    }
+  }
+}
+
 class DynamicWeatherSystem {
   constructor() {
     this.transitionManager = new WeatherTransitionManager();
+    this.fxMaster = new FXMasterIntegration();
     this.updateInterval = null;
     this.rollTableId = null;
     this.strangeWeatherRollTableIds = [];
     this.updateFrequency = 3600000; // 1 hour default
     this.lastRoll = 0;
+    this.lastFXUpdate = 0; // Track when we last updated FXMaster effects
+    this.fxUpdateInterval = 5000; // Update FXMaster effects every 5 seconds during transitions
     this.isActive = false;
+  }
+
+  /**
+   * Climate profiles defining temperature baselines and modifiers
+   */
+  static CLIMATE_PROFILES = {
+    arctic: {
+      tempBase: -20,
+      tempRange: 20,
+      precipMultiplier: 0.5,
+      snowThreshold: 100, // Always snow-like
+      windMultiplier: 1.3
+    },
+    subarctic: {
+      tempBase: -7.5,
+      tempRange: 25,
+      precipMultiplier: 0.8,
+      snowThreshold: 5,
+      windMultiplier: 1.2
+    },
+    temperate: {
+      tempBase: 12.5,
+      tempRange: 25,
+      precipMultiplier: 1.0,
+      snowThreshold: 0,
+      windMultiplier: 1.0
+    },
+    subtropical: {
+      tempBase: 20,
+      tempRange: 20,
+      precipMultiplier: 1.2,
+      snowThreshold: -10,
+      windMultiplier: 0.9
+    },
+    tropical: {
+      tempBase: 27.5,
+      tempRange: 15,
+      precipMultiplier: 1.5,
+      snowThreshold: -999, // Never snow
+      windMultiplier: 0.8
+    },
+    desert: {
+      tempBase: 30,
+      tempRange: 30,
+      precipMultiplier: 0.3,
+      snowThreshold: -5,
+      windMultiplier: 1.1
+    },
+    mediterranean: {
+      tempBase: 20,
+      tempRange: 20,
+      precipMultiplier: 0.7,
+      snowThreshold: -2,
+      windMultiplier: 0.9
+    },
+    alpine: {
+      tempBase: 5,
+      tempRange: 30,
+      precipMultiplier: 1.1,
+      snowThreshold: 5,
+      windMultiplier: 1.4
+    }
+  };
+
+  /**
+   * Apply climate adjustments to a weather pattern
+   * @param {WeatherPattern} pattern - The weather pattern to adjust
+   */
+  applyClimateAdjustments(pattern) {
+    const climate = game.settings.get("dynamic-weather", "climate");
+    const profile = DynamicWeatherSystem.CLIMATE_PROFILES[climate];
+
+    if (!profile) return;
+
+    // Adjust temperature based on climate baseline
+    // If temperature was set to default (20), replace with climate base
+    // Otherwise, adjust relative to the climate
+    if (pattern.temperature === 20) {
+      pattern.temperature = profile.tempBase;
+    } else {
+      // Offset from the default temperate baseline to the new climate
+      const offset = profile.tempBase - 12.5; // 12.5 is temperate base
+      pattern.temperature += offset;
+    }
+
+    // Add some variation within the climate's typical range
+    const variation = (Math.random() - 0.5) * profile.tempRange;
+    pattern.temperature += variation;
+
+    // Adjust precipitation based on climate
+    pattern.precipitation *= profile.precipMultiplier;
+    pattern.precipitation = Math.max(0, Math.min(100, pattern.precipitation));
+
+    // Adjust wind speed based on climate
+    pattern.windSpeed *= profile.windMultiplier;
+
+    // Adjust snow behavior based on climate
+    const isSnowWeather = pattern.name.toLowerCase().includes("snow");
+    if (isSnowWeather && pattern.temperature > profile.snowThreshold) {
+      // Too warm for snow in this climate - convert to rain
+      if (climate === "tropical" || climate === "desert") {
+        // In hot climates, reduce precipitation further
+        pattern.precipitation *= 0.7;
+      }
+      // Keep the precipitation but warmer temperature will change the preset
+    } else if (
+      !isSnowWeather &&
+      pattern.temperature < profile.snowThreshold &&
+      pattern.precipitation > 30
+    ) {
+      // Cold enough for snow in this climate, but pattern isn't snow
+      // Don't force it, let the preset system handle it naturally
+    }
   }
 
   /**
@@ -244,6 +557,16 @@ class DynamicWeatherSystem {
     // If no current weather, roll immediately (only if table is configured)
     if (!this.transitionManager.currentPattern && this.rollTableId) {
       await this.rollWeather();
+    } else if (this.transitionManager.currentPattern) {
+      // Apply FXMaster effects for existing weather on initialization
+      if (game.settings.get("dynamic-weather", "enableFXMaster")) {
+        await this.fxMaster.applyWeatherEffects(
+          this.transitionManager.getCurrentState(),
+          true, // Skip fading on init for immediate application
+          true // Clear any existing effects first
+        );
+        this.lastFXUpdate = Date.now();
+      }
     } else if (!this.rollTableId) {
       console.warn(
         "Dynamic Weather: No rolltable configured. Please configure one in settings or the control dialog."
@@ -273,17 +596,44 @@ class DynamicWeatherSystem {
 
     // Update transition state
     const transitionComplete = this.transitionManager.update();
+    const now = Date.now();
 
     if (transitionComplete) {
       await this.saveState();
+
+      // Apply FXMaster effects when transition completes
+      // This ensures effects match the final weather state
+      if (game.settings.get("dynamic-weather", "enableFXMaster")) {
+        await this.fxMaster.applyWeatherEffects(
+          this.transitionManager.getCurrentState(),
+          false, // Allow fading for smooth visual transition
+          false // Don't clear - let effects blend naturally
+        );
+        this.lastFXUpdate = now;
+      }
+
       Hooks.callAll(
         "dynamicWeatherTransitionComplete",
         this.transitionManager.getCurrentState()
       );
+    } else if (this.transitionManager.isTransitioning()) {
+      // During transition, periodically update FXMaster effects based on interpolated state
+      const timeSinceLastFXUpdate = now - this.lastFXUpdate;
+      if (
+        game.settings.get("dynamic-weather", "enableFXMaster") &&
+        timeSinceLastFXUpdate >= this.fxUpdateInterval
+      ) {
+        // Apply effects based on the current interpolated weather state
+        await this.fxMaster.applyWeatherEffects(
+          this.transitionManager.getCurrentState(),
+          false, // Allow fading for smooth visual transitions
+          false // Don't clear - let effects blend gradually
+        );
+        this.lastFXUpdate = now;
+      }
     }
 
     // Check if it's time to roll for new weather
-    const now = Date.now();
     const timeSinceLastRoll = now - this.lastRoll;
     if (timeSinceLastRoll >= this.updateFrequency) {
       await this.rollWeather();
@@ -380,13 +730,31 @@ class DynamicWeatherSystem {
 
       if (result) {
         const newPattern = this.parseWeatherFromResult(result, weatherType);
-        const duration =
-          game.settings.get("dynamic-weather", "transitionDuration") * 60000;
+
+        // Check if transitions are enabled
+        const transitionsEnabled = game.settings.get(
+          "dynamic-weather",
+          "enableTransitions"
+        );
+        const duration = transitionsEnabled
+          ? game.settings.get("dynamic-weather", "transitionDuration") * 60000
+          : 0; // 0 duration = instant change
 
         this.transitionManager.startTransition(newPattern, duration);
         this.lastRoll = Date.now();
 
         await this.saveState();
+
+        // Apply initial FXMaster effects based on interpolated state
+        // Effects will continue updating every 5 seconds during transition
+        if (game.settings.get("dynamic-weather", "enableFXMaster")) {
+          await this.fxMaster.applyWeatherEffects(
+            this.transitionManager.getCurrentState(),
+            !transitionsEnabled, // Skip fading if transitions disabled
+            false // Don't clear - blend from previous weather
+          );
+          this.lastFXUpdate = Date.now();
+        }
 
         // Notify users
         if (game.settings.get("dynamic-weather", "announceWeather")) {
@@ -439,12 +807,17 @@ class DynamicWeatherSystem {
       // Create a copy without name/description from flags (those come from table result only)
       const { name: _, description: __, ...cleanWeatherData } = weatherData;
 
-      return new WeatherPattern({
+      const pattern = new WeatherPattern({
         ...cleanWeatherData,
         name: name,
         description: text,
         weatherType
       });
+
+      // Apply climate adjustments
+      this.applyClimateAdjustments(pattern);
+
+      return pattern;
     }
 
     // Parse from text description
@@ -494,6 +867,9 @@ class DynamicWeatherSystem {
     if (lowerText.includes("wind")) {
       pattern.windSpeed = 35;
     }
+
+    // Apply climate adjustments
+    this.applyClimateAdjustments(pattern);
 
     return pattern;
   }
@@ -547,6 +923,12 @@ class DynamicWeatherSystem {
    */
   async clearWeatherState() {
     console.log("Dynamic Weather: Clearing saved weather state");
+
+    // Clear FXMaster effects if enabled
+    if (game.settings.get("dynamic-weather", "enableFXMaster")) {
+      await this.fxMaster.clearWeatherEffects(true);
+    }
+
     this.transitionManager.currentPattern = null;
     this.transitionManager.targetPattern = null;
     this.transitionManager.transitionProgress = 0;
@@ -730,6 +1112,34 @@ Hooks.once("init", () => {
     default: "normal"
   });
 
+  game.settings.register("dynamic-weather", "climate", {
+    name: "Climate Type",
+    hint: "Choose the climate for your world. Affects temperature baselines, precipitation patterns, and weather frequency.",
+    scope: "world",
+    config: true,
+    type: String,
+    choices: {
+      arctic: "Arctic (Very Cold, -30°C to -10°C)",
+      subarctic: "Subarctic (Cold, -20°C to 5°C)",
+      temperate: "Temperate (Moderate, 0°C to 25°C)",
+      subtropical: "Subtropical (Warm, 10°C to 30°C)",
+      tropical: "Tropical (Hot & Humid, 20°C to 35°C)",
+      desert: "Desert (Hot & Dry, 15°C to 45°C)",
+      mediterranean: "Mediterranean (Mild, 10°C to 30°C)",
+      alpine: "Alpine/Mountain (Cool & Variable, -10°C to 20°C)"
+    },
+    default: "temperate",
+    onChange: () => {
+      // Reapply climate adjustments to current weather
+      if (weatherSystem) {
+        const currentState = weatherSystem.transitionManager.getCurrentState();
+        if (currentState) {
+          weatherSystem.applyClimateAdjustments(currentState);
+        }
+      }
+    }
+  });
+
   game.settings.register("dynamic-weather", "rollTableId", {
     name: "Normal Weather RollTable",
     hint: "Select the rolltable to use for generating normal weather patterns",
@@ -817,10 +1227,19 @@ Hooks.once("init", () => {
     type: Number,
     default: 60,
     range: {
-      min: 1,
+      min: 0,
       max: 240,
       step: 1
     }
+  });
+
+  game.settings.register("dynamic-weather", "enableTransitions", {
+    name: "Enable Weather Transitions",
+    hint: "When enabled, weather gradually transitions over time. When disabled, weather changes instantly.",
+    scope: "world",
+    config: false,
+    type: Boolean,
+    default: true
   });
 
   game.settings.register("dynamic-weather", "announceWeather", {
@@ -839,6 +1258,15 @@ Hooks.once("init", () => {
     config: true,
     type: Boolean,
     default: false
+  });
+
+  game.settings.register("dynamic-weather", "enableFXMaster", {
+    name: "Enable FXMaster Integration",
+    hint: "Automatically apply FXMaster visual effects based on weather (requires FXMaster module)",
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true
   });
 
   game.settings.register("dynamic-weather", "temperatureUnit", {
